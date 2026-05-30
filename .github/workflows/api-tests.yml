@@ -48,6 +48,10 @@ jobs:
           allure_results: allure-results
           allure_history: allure-history
 
+      - name: Fix Allure report permissions
+        if: always()
+        run: sudo chown -R $USER:$USER allure-history
+
       - uses: peaceiris/actions-gh-pages@v3
         if: always()
         with:
