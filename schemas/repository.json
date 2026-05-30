@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": ["id", "name", "full_name", "owner", "private", "html_url", "created_at"],
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "full_name": { "type": "string" },
+    "owner": {
+      "type": "object",
+      "required": ["login", "id", "type"],
+      "properties": {
+        "login": { "type": "string" },
+        "id": { "type": "integer" },
+        "type": { "type": "string", "enum": ["User", "Organization"] }
+      }
+    },
+    "private": { "type": "boolean" },
+    "html_url": { "type": "string", "format": "uri" },
+    "created_at": { "type": "string" }
+  }
+}

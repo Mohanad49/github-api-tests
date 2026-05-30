@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": ["login", "id", "type", "html_url", "created_at"],
+  "properties": {
+    "login": { "type": "string" },
+    "id": { "type": "integer" },
+    "avatar_url": { "type": "string", "format": "uri" },
+    "type": { "type": "string", "enum": ["User", "Organization", "Bot"] },
+    "name": { "type": ["string", "null"] },
+    "company": { "type": ["string", "null"] },
+    "blog": { "type": ["string", "null"] },
+    "location": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"] },
+    "bio": { "type": ["string", "null"] },
+    "public_repos": { "type": "integer" },
+    "followers": { "type": "integer" },
+    "following": { "type": "integer" },
+    "html_url": { "type": "string", "format": "uri" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  }
+}

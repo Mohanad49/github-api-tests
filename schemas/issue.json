@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "required": ["id", "number", "title", "state", "user", "created_at", "updated_at"],
+  "properties": {
+    "id": { "type": "integer" },
+    "number": { "type": "integer" },
+    "title": { "type": "string" },
+    "body": { "type": ["string", "null"] },
+    "state": { "type": "string", "enum": ["open", "closed"] },
+    "user": {
+      "type": "object",
+      "required": ["login", "id"],
+      "properties": {
+        "login": { "type": "string" },
+        "id": { "type": "integer" }
+      }
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "color": { "type": "string" }
+        }
+      }
+    },
+    "assignees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["login", "id"],
+        "properties": {
+          "login": { "type": "string" },
+          "id": { "type": "integer" }
+        }
+      }
+    },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "closed_at": { "type": ["string", "null"] },
+    "html_url": { "type": "string", "format": "uri" }
+  }
+}
