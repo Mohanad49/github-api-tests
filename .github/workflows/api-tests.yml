@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Grant GITHUB_TOKEN write permissions so it can deploy to gh-pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   api-tests:
     runs-on: ubuntu-latest
@@ -20,9 +26,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # The default GITHUB_TOKEN is an "integration" token and cannot access /user or create repos.
+      # We must use a Personal Access Token (PAT) stored as a GitHub Secret.
       - name: Run API tests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: pytest tests/ -v --alluredir=allure-results
 
       - name: Load Allure history
