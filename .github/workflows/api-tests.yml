@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+  # Nightly. Rolling-flip detection needs at least five scored runs before it
+  # will classify anything, and a push-only trigger can go a fortnight without
+  # producing one.
+  schedule:
+    - cron: "0 2 * * *"
 
 # Grant GITHUB_TOKEN write permissions so it can deploy to gh-pages
 permissions:
@@ -31,7 +37,17 @@ jobs:
       - name: Run API tests
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: pytest tests/ -v --alluredir=allure-results
+        run: >
+          pytest tests/ -v --alluredir=allure-results
+          --junitxml=junit-results.xml
+
+      - name: Upload machine-readable results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-junit
+          path: junit-results.xml
+          retention-days: 30
 
       - name: Load Allure history
         uses: actions/checkout@v4
@@ -58,3 +74,45 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+
+  # Repeat runs of one unchanged commit, on a schedule only.
+  #
+  # pytest cannot report retries the way Playwright can, so the same-commit
+  # strategy has to get its evidence the other way: several runs of one SHA. If
+  # two of these three disagree, the code was identical and the outcome was not.
+  #
+  # Separate from `api-tests` rather than a matrix on it, because that job
+  # publishes Allure to gh-pages and parallel copies would race on the push.
+  repeat:
+    name: Repeat run ${{ matrix.attempt }}
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        attempt: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      # A failing run is the data being collected, not a broken pipeline.
+      - name: Run tests
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pytest tests/ -v --alluredir=allure-results --junitxml=junit-results.xml
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-attempt-${{ matrix.attempt }}
+          path: |
+            junit-results.xml
+            allure-results/
+          retention-days: 30
