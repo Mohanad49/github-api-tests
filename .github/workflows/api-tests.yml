@@ -49,6 +49,26 @@ jobs:
           path: junit-results.xml
           retention-days: 30
 
+      # Feed this run into TestPulse, which is what puts this suite on the
+      # public dashboard at testpulse-eight.vercel.app.
+      #
+      # always(), because a failing run is the data point that matters most -
+      # skipping ingest on red would mean the flake history only ever sees green.
+      #
+      # Not on pull requests: branches that may never merge would pollute the
+      # history, and the flake numbers would end up describing code nobody runs.
+      - name: Record the run in TestPulse
+        if: always() && github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: Mohanad49/testpulse@main
+        with:
+          path: junit-results.xml
+          format: junit
+          suite: github-api
+          database-url: ${{ secrets.TESTPULSE_DATABASE_URL }}
+          dashboard-url: https://testpulse-eight.vercel.app
+          comment: "false"
+
       - name: Load Allure history
         uses: actions/checkout@v4
         if: always()
@@ -120,3 +140,18 @@ jobs:
             junit-results.xml
             allure-results/
           retention-days: 30
+
+      # Each attempt is stored as its own run. TestPulse's natural key includes
+      # the start time, so three runs of one unchanged commit do not collapse
+      # into one - which is the entire reason this job exists.
+      - name: Record the run in TestPulse
+        if: always()
+        continue-on-error: true
+        uses: Mohanad49/testpulse@main
+        with:
+          path: junit-results.xml
+          format: junit
+          suite: github-api
+          database-url: ${{ secrets.TESTPULSE_DATABASE_URL }}
+          dashboard-url: https://testpulse-eight.vercel.app
+          comment: "false"
