@@ -49,19 +49,35 @@ class TestUsers:
         validate(response.json(), "user")
 
     @pytest.mark.regression
-    def test_update_authenticated_user_bio(self, session, base_url):
-        """PATCH /user can update the user's bio."""
-        # Save current bio
+    def test_patch_authenticated_user_is_accepted(self, session, base_url):
+        """PATCH /user accepts a write and echoes the stored value back.
+
+        This deliberately writes the bio back to whatever it already is, rather
+        than setting a test string and restoring it afterwards.
+
+        The earlier version set the bio to "Updated bio from automated test" and
+        restored it on the next line. That is safe right up until the process is
+        killed between those two calls - a cancelled workflow, a runner timeout,
+        a rate limit - and then a real, public GitHub profile is left advertising
+        that it is being written to by a test suite. On a nightly schedule that
+        is several chances a week to leave it that way.
+
+        Writing the current value back is idempotent: it exercises the same
+        endpoint, the same auth, the same status code and the same response
+        shape, and there is no window in which the account is in a state anyone
+        has to clean up. Please do not "improve" this back into a mutation.
+        """
         current = session.get(f"{base_url}/user").json()
-        original_bio = current.get("bio")
+        # GitHub returns null for an unset bio and rejects null on write.
+        unchanged = current.get("bio") or ""
 
-        new_bio = "Updated bio from automated test"
-        response = session.patch(f"{base_url}/user", json={"bio": new_bio})
+        response = session.patch(f"{base_url}/user", json={"bio": unchanged})
         assert response.status_code == 200
-        assert response.json()["bio"] == new_bio
+        assert (response.json().get("bio") or "") == unchanged
 
-        # Restore original bio
-        session.patch(f"{base_url}/user", json={"bio": original_bio or ""})
+        # And the account really is where it started.
+        after = session.get(f"{base_url}/user").json()
+        assert (after.get("bio") or "") == unchanged
 
     @pytest.mark.regression
     def test_list_user_repos(self, session, base_url, authenticated_user):
