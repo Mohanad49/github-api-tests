@@ -104,7 +104,11 @@ jobs:
       - name: Run tests
         continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PAT_TOKEN, matching the main job. The automatic GITHUB_TOKEN cannot
+          # create repositories or PATCH /user, which is what this suite does, so
+          # using it here would have produced a 401 every night and looked
+          # exactly like a flaky suite.
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: pytest tests/ -v --alluredir=allure-results --junitxml=junit-results.xml
 
       - name: Upload results
