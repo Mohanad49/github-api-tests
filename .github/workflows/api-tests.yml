@@ -103,12 +103,30 @@ jobs:
   #
   # Separate from `api-tests` rather than a matrix on it, because that job
   # publishes Allure to gh-pages and parallel copies would race on the push.
+  #
+  # `needs` and `max-parallel: 1` are the schedule-side half of the secondary
+  # rate-limit fix, and they are the reason this job stopped being free.
+  #
+  # Added on 2026-07-29, this job ran its three attempts in parallel, alongside
+  # `api-tests`, all four sharing one token. Every scheduled run from the next
+  # night onward failed: four concurrent copies of a suite that creates
+  # repositories, issues and comments is a burst of content creation, and
+  # GitHub's secondary limit exists precisely to stop that. The suite was not
+  # measuring flakiness in the API - it was measuring the interference between
+  # its own jobs, which is the one thing a flake detector must not do.
+  #
+  # Serialised, the four runs take longer and produce the same evidence. Three
+  # runs of one SHA disagreeing is only meaningful if nothing about the runs
+  # differed, and "how many siblings were hammering the same token" is a
+  # difference.
   repeat:
     name: Repeat run ${{ matrix.attempt }}
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: api-tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         attempt: [1, 2, 3]
     steps:
