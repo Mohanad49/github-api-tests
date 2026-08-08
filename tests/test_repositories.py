@@ -47,13 +47,28 @@ class TestRepositories:
 
     @pytest.mark.regression
     def test_delete_repo_returns_204(self, session, base_url, authenticated_user):
-        """DELETE /repos/:owner/:repo returns 204 No Content."""
+        """DELETE /repos/:owner/:repo returns 204 No Content.
+
+        Creates its own repository rather than taking the shared `test_repo`
+        fixture, because it destroys what it is given.
+
+        The creation is asserted before the deletion is attempted. It was not,
+        and when the account was being throttled the create silently returned
+        403, the delete then correctly reported 404 for a repository that had
+        never existed, and the failure read `assert 404 == 204` - which points
+        at DELETE, the one call in this test that was working.
+        """
         import uuid
 
         repo_name = f"test-delete-{uuid.uuid4().hex[:8]}"
-        session.post(f"{base_url}/user/repos", json={
+        create_resp = session.post(f"{base_url}/user/repos", json={
             "name": repo_name, "private": True, "auto_init": True,
         })
+        assert create_resp.status_code == 201, (
+            f"Setup failed, so DELETE was never exercised — "
+            f"status {create_resp.status_code}: {create_resp.text}"
+        )
+
         username = authenticated_user["login"]
         del_resp = session.delete(f"{base_url}/repos/{username}/{repo_name}")
         assert del_resp.status_code == 204
