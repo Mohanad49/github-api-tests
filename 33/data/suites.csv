@@ -1,0 +1,89 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Responses should return application/json content type.","350","test_response_content_type_is_json","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[201]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"Unauthorized responses include a human-readable message.","30","test_401_response_has_message","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"The authenticated user payload must contain a login field.","0","test_authenticated_user_has_login","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"GET /user without any credentials returns 401.","58","test_no_auth_returns_401_for_private_endpoint","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"GET /users/:username/repos returns a list.","363","test_list_user_repos","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"The test_issue fixture should have created an issue successfully.","0","test_create_issue_returns_201","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"","0","test_retry_after_header_is_honoured","tests","2026-08-17","passed","2026-08-17","TestRetryBehaviour","test_rate_limiting","",""
+"","0","test_throttled_request_is_retried_until_it_succeeds","tests","2026-08-17","passed","2026-08-17","TestRetryBehaviour","test_rate_limiting","",""
+"When results are paginated, the response includes a Link header.","125","test_repos_pagination_link_header","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"
+        The one that matters. GitHub uses 403 for ""too fast"" and for ""not
+        allowed"", and this suite asserts on the second kind.
+        ","1","test_plain_403_is_not_a_rate_limit","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"PATCH /user accepts a write and echoes the stored value back.
+
+        This deliberately writes the bio back to whatever it already is, rather
+        than setting a test string and restoring it afterwards.
+
+        The earlier version set the bio to ""Updated bio from automated test"" and
+        restored it on the next line. That is safe right up until the process is
+        killed between those two calls - a cancelled workflow, a runner timeout,
+        a rate limit - and then a real, public GitHub profile is left advertising
+        that it is being written to by a test suite. On a nightly schedule that
+        is several chances a week to leave it that way.
+
+        Writing the current value back is idempotent: it exercises the same
+        endpoint, the same auth, the same status code and the same response
+        shape, and there is no window in which the account is in a state anyone
+        has to clean up. Please do not ""improve"" this back into a mutation.
+        ","563","test_patch_authenticated_user_is_accepted","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"GET /repos/:owner/:repo with bogus names returns 404.","50","test_get_nonexistent_repo_returns_404","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"GET /user returns 200 for an authenticated user.","119","test_get_authenticated_user_returns_200","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"DELETE /repos/:owner/:repo returns 204 No Content.
+
+        Creates its own repository rather than taking the shared `test_repo`
+        fixture, because it destroys what it is given.
+
+        The creation is asserted before the deletion is attempted. It was not,
+        and when the account was being throttled the create silently returned
+        403, the delete then correctly reported 404 for a repository that had
+        never existed, and the failure read `assert 404 == 204` - which points
+        at DELETE, the one call in this test that was working.
+        ","2976","test_delete_repo_returns_204","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"Unauthorized responses include a documentation_url for debugging.","30","test_401_response_has_documentation_url","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"
+        Backing off forever is not more correct than failing. Past the budget
+        the suite returns GitHub's own response so the failure message says why.
+        ","0","test_gives_up_and_reports_the_throttled_response","tests","2026-08-17","passed","2026-08-17","TestRetryBehaviour","test_rate_limiting","",""
+"GET /users/:username with a bogus username returns 404.","55","test_get_nonexistent_user_returns_404","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[422]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"404 responses include a message field in the body.","36","test_nonexistent_user_response_has_message","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"GET /repos/:owner/:repo/issues/99999 returns 404.","78","test_get_nonexistent_issue_returns_404","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"","0","test_plain_403_is_not_retried","tests","2026-08-17","passed","2026-08-17","TestRetryBehaviour","test_rate_limiting","",""
+"Creating a repo with the same name as an existing one returns 422.","585","test_create_duplicate_repo_returns_422","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[401]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"GET /repos/:owner/:repo/issues/:number matches the issue JSON schema.","148","test_get_issue_response_schema","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"GET /user/repos returns a list for authenticated users.","439","test_get_authenticated_user_repos","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"POST /repos/bad-user/bad-repo/issues returns 404.","888","test_create_issue_on_nonexistent_repo_returns_404","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"Sanity check — a valid token should succeed.","188","test_valid_token_returns_200","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"POST /repos/:owner/:repo/issues without a title returns 422.","86","test_create_issue_without_title_returns_422","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"Public endpoints like /zen work without auth.","112","test_unauthenticated_public_endpoint_returns_200","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"PATCH /repos/:owner/:repo successfully updates the description.","529","test_update_repo_description","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"A completely malformed Authorization header should be rejected.","31","test_malformed_auth_header_returns_401","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"Every authenticated response should include rate-limit headers.","427","test_response_includes_rate_limit_headers","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"","0","test_writes_are_paced_but_reads_are_not","tests","2026-08-17","passed","2026-08-17","TestRetryBehaviour","test_rate_limiting","",""
+"GET /users/:username/followers returns a list.","112","test_list_user_followers","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"A request with a garbage token should be rejected.","42","test_invalid_token_returns_401","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"POST /repos/:owner/:repo/issues/:number/labels adds labels.","2405","test_add_label_to_issue","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"Setting per_page limits the number of repos returned.","161","test_repos_pagination_per_page","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"GET /users/:username also matches the user JSON schema.","91","test_public_user_response_schema","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"PATCH /repos/:owner/:repo/issues/:number can update the title.","1295","test_update_issue_title","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"GET /repos/:owner/:repo/issues?state=closed returns only closed issues.","225","test_list_issues_filter_by_state","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"Even unauthenticated requests include rate-limit headers.","32","test_rate_limit_headers_on_unauthenticated_request","tests","2026-08-17","passed","2026-08-17","TestAuthentication","test_auth","",""
+"GET /users/:username/following returns a list.","91","test_list_user_following","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"","0","test_exhausted_primary_limit_is_detected","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"GET /users/:username returns the same user info.","114","test_get_user_by_username","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"POST /user/repos without a name field returns 422.","1057","test_create_repo_without_name_returns_422","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"GET /user response matches the user JSON schema.","104","test_authenticated_user_response_schema","tests","2026-08-17","passed","2026-08-17","TestUsers","test_users","",""
+"","7","test_secondary_limit_body_is_detected","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"","0","test_retry_after_header_is_detected","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"PATCH /repos/:owner/:repo/issues/:number can close an issue.","1521","test_close_issue","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[404]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"POST /repos/:owner/:repo/issues/:number/comments adds a comment.","1527","test_add_comment_to_issue","tests","2026-08-17","passed","2026-08-17","TestIssues","test_issues","",""
+"GET /repos/:owner/:repo matches the repository JSON schema.","202","test_get_repo_response_schema","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"Repo creation fixture should have produced a valid repo name.","0","test_create_repo_returns_201","tests","2026-08-17","passed","2026-08-17","TestRepositories","test_repositories","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[200]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
+"","0","test_ordinary_statuses_are_not_rate_limits[204]","tests","2026-08-17","passed","2026-08-17","TestRateLimitDetection","test_rate_limiting","",""
